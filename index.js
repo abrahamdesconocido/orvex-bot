@@ -37,8 +37,8 @@ function clearWarns(userId, guildId) {
 // =============================================
 //  CONFIGURACIÓN
 // =============================================
-const TOKEN          = process.env.TOKEN;
-const PREFIX         = '!';
+const TOKEN = process.env.TOKEN;
+const PREFIX = '!';
 const LOG_CHANNEL_ID = '';
 
 // =============================================
@@ -286,6 +286,33 @@ client.on('messageCreate', async (message) => {
   }
 
   // ── UNBAN ──
+// ── CLEAR ──
+  if (command === 'clear' || command === 'purge') {
+    if (!message.member.permissions.has(PermissionFlagsBits.ManageMessages))
+      return message.reply('❌ No tienes permisos para borrar mensajes.');
+    if (!message.guild.members.me.permissions.has(PermissionFlagsBits.ManageMessages))
+      return message.reply('❌ El bot no tiene permisos para borrar mensajes.');
+
+    const amount = parseInt(args[0]);
+    if (!amount || amount < 1 || amount > 100)
+      return message.reply('❌ Pon un número entre 1 y 100. Ej: `!clear 10`');
+
+    await message.delete();
+    const deleted = await message.channel.bulkDelete(amount, true);
+
+    const msg = await message.channel.send({
+      embeds: [new EmbedBuilder()
+        .setTitle('🧹 Chat limpiado')
+        .setColor(0x57F287)
+        .setDescription(`Se borraron **${deleted.size}** mensajes.`)
+        .addFields({ name: 'Moderador', value: message.author.tag })
+        .setTimestamp()
+      ]
+    });
+
+    setTimeout(() => msg.delete(), 4000);
+  }
+
   if (command === 'unban') {
     if (!message.member.permissions.has(PermissionFlagsBits.BanMembers))
       return message.reply('❌ No tienes permisos para desbanear usuarios.');
