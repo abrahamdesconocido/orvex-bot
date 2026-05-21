@@ -3,30 +3,24 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Partials, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const Database = require('better-sqlite3');
 const express = require('express');
+const https = require('https');
 
 // =============================================
-//  SERVIDOR WEB (para estadísticas en tiempo real)
+//  SERVIDOR WEB (necesario para Render)
 // =============================================
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.get('/', (req, res) => res.send('Orvex Bot funcionando ✅'));
+app.listen(PORT, () => console.log(`🌐 Servidor web en puerto ${PORT}`));
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  next();
-});
-
-app.get('/stats', (req, res) => {
-  res.json({
-    servers: client.guilds?.cache.size || 0,
-    users: client.guilds?.cache.reduce((acc, guild) => acc + guild.memberCount, 0) || 0,
-    status: client.isReady() ? 'online' : 'offline',
-    ping: client.ws.ping || 0,
-  });
-});
-
-app.get('/', (req, res) => res.send('Orvex Bot API funcionando ✅'));
-
-app.listen(PORT, () => console.log(`🌐 API corriendo en puerto ${PORT}`));
+// =============================================
+//  MANTENER DESPIERTO EN RENDER
+// =============================================
+setInterval(() => {
+  https.get('https://orvex-bot.onrender.com', () => {
+    console.log('🏓 Ping enviado para mantener el bot despierto');
+  }).on('error', () => {});
+}, 10 * 60 * 1000);
 
 // =============================================
 //  BASE DE DATOS
